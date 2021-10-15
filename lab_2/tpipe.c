@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+/*
+使用管道在线程间传递信息
+*/
+
 static void task1(int *);
 static void task2(int *);
 // 两个无名管道标号
