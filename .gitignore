@@ -1,0 +1,20 @@
+# root
+/*
+!.gitignore
+# lab_1
+!/lab_1
+/lab_1/*
+!*.h
+!*.c
+!*.cpp
+!Makefile
+# lab_2
+!/lab_2
+/lab_2/*
+!*.h
+!*.c
+!*.cpp
+!Makefile
+# lab_3
+
+!实验报告
