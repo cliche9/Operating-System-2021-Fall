@@ -16,5 +16,11 @@
 !*.cpp
 !Makefile
 # lab_3
+!/lab_3
+/lab_3/*
+!*.h
+!*.c
+!*.cpp
+!Makefile
 
 !实验报告
