@@ -1,3 +1,4 @@
+head = lab_3.h
 srcs = lab_3.c
 objs = lab_3.o
 opts = -g -c
