@@ -56,6 +56,7 @@ int main() {
             background = 1;
             inputLine[length - 2] = '\0';
         }
+        printf("EXE: %s\n", inputLine);
 
         strcpy(temp, inputLine);
         size_t argc = parse(temp, argv);
@@ -96,28 +97,6 @@ int parse(char *word, char *argv[]) {
     return count;
 }
 
-void trim(char *string) {
-    // 默认文件名不包含空格
-    int left = 0;
-    int right = strlen(string) - 1;
-    if (left > right)
-        return;
-    char *temp = (char *)malloc(sizeof(char) * (right + 1));
-    strcpy(temp, string);
-
-    while (string[left] != '\0' && string[left] == ' ')
-        left++;
-    while (right > left && string[right] == ' ')
-        right--;
-
-    strncpy(string, temp + left, right - left + 1);
-    free(temp);
-    /*
-    // debug
-    printf("%s\n",string);
-    printf("%d\n",j);
-    */
-}
 
 void execute(int argc, char *argv[], int background) {
     pid_t pid;
@@ -128,18 +107,22 @@ void execute(int argc, char *argv[], int background) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         // 记录标准输入输出
+        printf("\nPid in\n");
         int ifd = dup(STDIN_FILENO);
         int ofd = dup(STDOUT_FILENO);
+        printf("\nExe in\n");
         executeWithPipe(0, argc, argv);
+        printf("\nExe out\n");
         // 输入输出重定向回标准输入输出
         dup2(ifd, STDIN_FILENO);
+        close(ifd);
         dup2(ofd, STDOUT_FILENO);
+        close(ofd);
         // 这里不会运行 是为啥呢?
         if (background == 1) {
-            printf("[PID]  + done");
-            getcwd(currentDir, MAX_PATH);
-            printf("myshell@Desktop %s $ ", currentDir);
+            printf("\n[PID] %d + done\n", getpid());
         }
+        printf("\nPid out\n");
     } else {
         if (background == 0)
             while (wait(&status) != pid); //ref-"wait":http://see.xidian.edu.cn/cpp/html/289.html
@@ -163,8 +146,12 @@ void executeWithPipe(int start, int end, char *argv[]) {
         }
     }
     // 不存在pipe
-    if (positionOfPipe == -1)
+    if (positionOfPipe == -1) {
+        printf("\nWithoutPipe in\n");
         executeWithoutPipe(start, end, argv);
+        printf("\nWithoutPipe out\n");
+        return;
+    }
     // 存在pipe
     // write to pipe[1]
     // read from pipe[0]
@@ -176,18 +163,21 @@ void executeWithPipe(int start, int end, char *argv[]) {
         exit(EXIT_FAILURE);
     else if (pid == 0) {
         // 子进程
-        close(pipe1[0]);
+        printf("\nExe Child in\n");
         dup2(pipe1[1], STDOUT_FILENO);
         close(pipe1[1]);
+        close(pipe1[0]);
         executeWithoutPipe(start, positionOfPipe, argv);
     } else if (pid > 0) {
         // 父进程等待子进程执行完毕
+        printf("\nExe parent in\n");
         int status = 0;
         waitpid(pid, &status, 0);
         if (positionOfPipe + 1 < end) {
-            close(pipe1[1]);
             dup2(pipe1[0], STDIN_FILENO);
+            // 为什么要完全关闭管道？
             close(pipe1[0]);
+            close(pipe1[1]);
             executeWithPipe(positionOfPipe + 1, end, argv);
         }
     }
@@ -231,5 +221,22 @@ void executeWithoutPipe(int start, int end, char *argv[]) {
     for (int i = start; i < end; i++)
         temp[i] = argv[i];
     temp[endOfRedirection] = NULL;
-    execvp(temp[start], temp + start);
+    printf("\nWithPipe in\n");
+    printf("\nendOfRedirection = %d\n", endOfRedirection);
+    printf("\nstart = %d, end = %d\n", start, end);
+    printf("\nargv: \n");
+    for (int i = start; i < end; i++)
+        printf("%s\n", argv[i]);
+    // 调用子程序执行execvp, 方便输出信息
+    pid_t pid = fork();
+    if (pid < 0) {
+        printf("Create Process Failed.\n");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0)
+        execvp(temp[start], temp + start);
+    else {
+        int status = 0;
+        waitpid(pid, &status, 0);
+        printf("\nWithPipe out\n");
+    }
 }

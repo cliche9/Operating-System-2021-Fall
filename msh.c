@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <signal.h>
 int pid;
 typedef void(*sighandler_t)(int);
 void sigcat(){//信号处理
