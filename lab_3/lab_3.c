@@ -107,22 +107,16 @@ void execute(int argc, char *argv[], int background) {
         exit(EXIT_FAILURE);
     } else if (pid == 0) {
         // 记录标准输入输出
-        printf("\nPid in\n");
         int ifd = dup(STDIN_FILENO);
         int ofd = dup(STDOUT_FILENO);
-        printf("\nExe in\n");
         executeWithPipe(0, argc, argv);
-        printf("\nExe out\n");
         // 输入输出重定向回标准输入输出
         dup2(ifd, STDIN_FILENO);
-        close(ifd);
         dup2(ofd, STDOUT_FILENO);
-        close(ofd);
         // 这里不会运行 是为啥呢?
         if (background == 1) {
             printf("\n[PID] %d + done\n", getpid());
         }
-        printf("\nPid out\n");
     } else {
         if (background == 0)
             while (wait(&status) != pid); //ref-"wait":http://see.xidian.edu.cn/cpp/html/289.html
@@ -147,9 +141,7 @@ void executeWithPipe(int start, int end, char *argv[]) {
     }
     // 不存在pipe
     if (positionOfPipe == -1) {
-        printf("\nWithoutPipe in\n");
         executeWithoutPipe(start, end, argv);
-        printf("\nWithoutPipe out\n");
         return;
     }
     // 存在pipe
@@ -163,14 +155,12 @@ void executeWithPipe(int start, int end, char *argv[]) {
         exit(EXIT_FAILURE);
     else if (pid == 0) {
         // 子进程
-        printf("\nExe Child in\n");
         dup2(pipe1[1], STDOUT_FILENO);
         close(pipe1[1]);
         close(pipe1[0]);
         executeWithoutPipe(start, positionOfPipe, argv);
     } else if (pid > 0) {
         // 父进程等待子进程执行完毕
-        printf("\nExe parent in\n");
         int status = 0;
         waitpid(pid, &status, 0);
         if (positionOfPipe + 1 < end) {
@@ -187,6 +177,7 @@ void executeWithoutPipe(int start, int end, char *argv[]) {
     int numberOfInputs = 0, numberOfOutputs = 0;
     char *fileOfInputs = NULL, *fileOfOutputs = NULL;
     int endOfRedirection = end;
+
     // 寻找重定向符号
     for (int i = start; i < end; i++) {
         if (strcmp(argv[i], "<") == 0) {
@@ -221,22 +212,15 @@ void executeWithoutPipe(int start, int end, char *argv[]) {
     for (int i = start; i < end; i++)
         temp[i] = argv[i];
     temp[endOfRedirection] = NULL;
-    printf("\nWithPipe in\n");
-    printf("\nendOfRedirection = %d\n", endOfRedirection);
-    printf("\nstart = %d, end = %d\n", start, end);
-    printf("\nargv: \n");
-    for (int i = start; i < end; i++)
-        printf("%s\n", argv[i]);
     // 调用子程序执行execvp, 方便输出信息
     pid_t pid = fork();
     if (pid < 0) {
-        printf("Create Process Failed.\n");
+        perror("Create Process Failed.\n");
         exit(EXIT_FAILURE);
     } else if (pid == 0)
         execvp(temp[start], temp + start);
     else {
         int status = 0;
         waitpid(pid, &status, 0);
-        printf("\nWithPipe out\n");
     }
 }
