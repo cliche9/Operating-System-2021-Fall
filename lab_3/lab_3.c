@@ -22,6 +22,10 @@ void sigcat(int sigNumber) {
     printf("\nCatch Signal %d\n", sigNumber);
 }
 
+void sigcat_quit(int sigNumber) {
+    exit(EXIT_FAILURE);
+}
+
 // 1-parse user's input
 static int parse(char *word, char *argv[]);
 //2-get the first word
@@ -44,6 +48,7 @@ int main() {
         printf("myshell@Desktop %s $ ", currentDir);
         // SIGNAL
         signal(SIGINT,(sighandler_t)sigcat);
+        
         // 处理输入
         fgets(inputLine, EXE_LENGTH, stdin);
         length = strlen(inputLine);
@@ -97,7 +102,6 @@ int parse(char *word, char *argv[]) {
     return count;
 }
 
-
 void execute(int argc, char *argv[], int background) {
     pid_t pid;
     int status;
@@ -115,13 +119,16 @@ void execute(int argc, char *argv[], int background) {
         dup2(ofd, STDOUT_FILENO);
         // 这里不会运行 是为啥呢?
         if (background == 1) {
-            printf("\n[PID] %d + done\n", getpid());
+            printf("\n[PID] %d + done\t", getpid());
+            for (int i = 0; i < argc; i++)
+                printf("%s ", argv[i]);
+            printf("\n");
         }
     } else {
         if (background == 0)
             while (wait(&status) != pid); //ref-"wait":http://see.xidian.edu.cn/cpp/html/289.html
         else {
-            printf("[PID] %d\n", pid);
+            printf("[PID] %d\n", pid);         
         }
     }
 }
@@ -159,6 +166,7 @@ void executeWithPipe(int start, int end, char *argv[]) {
         close(pipe1[1]);
         close(pipe1[0]);
         executeWithoutPipe(start, positionOfPipe, argv);
+        exit(EXIT_SUCCESS);
     } else if (pid > 0) {
         // 父进程等待子进程执行完毕
         int status = 0;
@@ -172,6 +180,8 @@ void executeWithPipe(int start, int end, char *argv[]) {
         }
     }
 }
+
+// find . -maxdepth 1 -name 111.txt | xargs grep hello | wc
 
 void executeWithoutPipe(int start, int end, char *argv[]) {
     int numberOfInputs = 0, numberOfOutputs = 0;
