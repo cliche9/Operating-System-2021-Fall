@@ -6,17 +6,23 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 // 指令长度 历史记录 路径长度 参数个数
 #define EXE_LENGTH 200
+#define USER_LENGTH 64
 #define PARAMETER_SIZE 64
 #define HISTORY_SIZE 1024
 #define MAX_PATH 1024
 typedef void(*sighandler_t)(int);
 
-char history[HISTORY_SIZE][EXE_LENGTH];
+// char history[HISTORY_SIZE][EXE_LENGTH];
 char currentDir[MAX_PATH];
+char userPath[USER_LENGTH] = "myshell@TEST ";
+char prompt[MAX_PATH];
+char *inputLine = NULL;
 int background = 0;
-int firstOfHistory, historyCount = 0;
+// int firstOfHistory = 0, historyCount = 0;
 
 void sigcat(int sigNumber) {
     printf("\nCatch Signal %d\n", sigNumber);
@@ -26,6 +32,7 @@ void sigcat_quit(int sigNumber) {
     exit(EXIT_FAILURE);
 }
 
+static char *processInput();
 // 1-parse user's input
 static int parse(char *word, char *argv[]);
 //2-get the first word
@@ -37,43 +44,60 @@ static void execute(int argc, char *argv[], int background);
 
 int main() {
     char argv[PARAMETER_SIZE][EXE_LENGTH];
-    char inputLine[EXE_LENGTH];
+    char *inputLine;
     char temp[EXE_LENGTH];
     size_t length = 0;
 
     while (1) {
-        // 获取当前目录
-        background = 0;
-        getcwd(currentDir, MAX_PATH);
-        printf("myshell@Desktop %s $ ", currentDir);
         // SIGNAL
         signal(SIGINT,(sighandler_t)sigcat);
-        
         // 处理输入
-        fgets(inputLine, EXE_LENGTH, stdin);
+        inputLine = processInput();
         length = strlen(inputLine);
         // Enter
         if (strcmp(inputLine, "\n") == 0)
             continue;
-        inputLine[length - 1] = '\0';
+        // History
         // 后台运行
-        if (inputLine[length - 2] == '&') {
+        if (inputLine[length - 1] == '&') {
             background = 1;
-            inputLine[length - 2] = '\0';
+            inputLine[length - 1] = '\0';
         }
-        printf("EXE: %s\n", inputLine);
+        // printf("EXE: %s\n", inputLine);
 
         strcpy(temp, inputLine);
         size_t argc = parse(temp, argv);
         if (argc > 0)
             execute(argc, argv, background);
         // 存储历史记录
-        strcpy(history[(firstOfHistory + 1) % HISTORY_SIZE], inputLine);
-        firstOfHistory = (firstOfHistory + 1) % HISTORY_SIZE;
-        historyCount++;
+        // strcpy(history[firstOfHistory], inputLine);
+        // firstOfHistory = (firstOfHistory + 1) % HISTORY_SIZE;
+        // historyCount++;
     }
     
     return 0;
+}
+
+char *processInput() {
+    // 获取当前目录
+    strcpy(prompt, userPath);
+    background = 0;
+    getcwd(currentDir, MAX_PATH);
+    strcat(prompt, currentDir);
+    strcat(prompt, " $ ");
+    
+    if (inputLine) {
+        free(inputLine);
+        inputLine = NULL;
+    }
+    
+    inputLine = readline(prompt);
+    // printf("\ninputLine: %s\n", inputLine);
+
+    if (inputLine && *inputLine)
+        add_history(inputLine);
+
+    return inputLine;
 }
 
 int parse(char *word, char *argv[]) {
