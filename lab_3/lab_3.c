@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <pthread.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 // 指令长度 历史记录 路径长度 参数个数
@@ -246,6 +247,7 @@ void executeWithoutPipe(int start, int end, char *argv[]) {
     for (int i = start; i < end; i++)
         temp[i] = argv[i];
     temp[endOfRedirection] = NULL;
+    // execvp(temp[start], temp + start);
     // 调用子程序执行execvp, 方便输出信息
     pid_t pid = fork();
     if (pid < 0) {
