@@ -34,11 +34,7 @@ void sigcat_quit(int sigNumber) {
 }
 
 static char *processInput();
-// 1-parse user's input
 static int parse(char *word, char *argv[]);
-//2-get the first word
-static void trim(char *string);
-//3-execute order
 static void executeWithoutPipe(int start, int end, char **argv);
 static void executeWithPipe(int start, int end, char **argv);
 static void execute(int argc, char *argv[], int background);
