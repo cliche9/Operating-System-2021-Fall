@@ -22,3 +22,10 @@
 !*.c
 !*.cpp
 !Makefile
+# lab_4
+!/lab_4
+/lab_4/*
+!*.h
+!*.c
+!*.cpp
+!Makefile
