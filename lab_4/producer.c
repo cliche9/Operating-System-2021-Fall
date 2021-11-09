@@ -45,9 +45,9 @@ int main (int argc, char *argv[]) {
     // 循环执行模拟生产者不断放产品
     while(1) {
         // 如果缓冲区满则生产者阻塞
-        down(prod_sem); 
+        P(prod_sem); 
         // 如果另一生产者正在放产品，本生产者阻塞
-        down(pmtx_sem);
+        P(pmtx_sem);
         
         // 用写一字符的形式模拟生产者放产品，报告本进程号和放入的字符及存放的位置
         buff_ptr[*pput_ptr] = 'A' + *pput_ptr;
@@ -57,9 +57,9 @@ int main (int argc, char *argv[]) {
         *pput_ptr = (*pput_ptr + 1) % buff_num;
 
         // 唤醒阻塞的生产者
-        up(pmtx_sem);
+        V(pmtx_sem);
         // 唤醒阻塞的消费者
-        up(cons_sem);
+        V(cons_sem);
     }
 
     return EXIT_SUCCESS; 

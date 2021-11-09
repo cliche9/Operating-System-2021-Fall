@@ -19,8 +19,9 @@ int get_ipc_id(char *proc_file, key_t key);
 char *set_shm(key_t shm_key, int shm_num, int shm_flag);
 int set_msq(key_t msq_key, int msq_flag);
 int set_sem(key_t sem_key, int sem_val, int sem_flag);
-int down(int sem_id);
-int up(int sem_id);
+// int remove_sem(key_t sem_key);
+int P(int sem_id);
+int V(int sem_id);
 /* 信号量控制用的共同体 */
 typedef union {
     int val; 
@@ -56,3 +57,16 @@ int cmtx_sem;
 int sem_val;
 int sem_flg;
 int shm_flg;
+// smoker semephore
+key_t smoker_key_1;
+key_t smoker_key_2;
+key_t smoker_key_3;
+int smoker_sem_1;
+int smoker_sem_2;
+int smoker_sem_3;
+// supplier semephore
+key_t supplier_key;
+key_t supmutex_key;
+int supplier_sem;
+int supmutex_sem;
+int *seq_ptr;

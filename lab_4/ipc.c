@@ -5,6 +5,14 @@
 #include "ipc.h"
 
 /*
+* sig_cat() 推出进程, 释放信号量、共享内存
+*/
+void sig_cat(int sigNumber) {
+    
+}
+
+
+/*
 * get_ipc_id() 从/proc/sysvipc/文件系统中获取 IPC 的 id 号
 * pfile: 对应/proc/sysvipc/目录中的 IPC 文件分别为
 * msg-消息队列,sem-信号量,shm-共享内存
@@ -48,32 +56,32 @@ int get_ipc_id(char *proc_file, key_t key) {
 }
 
 /*
-* 信号量上的 down/up 操作 
+* 信号量上的 P/V 操作 
 * semid: 信号量数组标识符 
 * semnum: 信号量数组下标 
 * buf: 操作信号量的结构
 */
-int down(int sem_id) {
+int P(int sem_id) {
     // P操作
     struct sembuf buf;
     buf.sem_op = -1;
     buf.sem_num = 0;
     buf.sem_flg = SEM_UNDO;
     if ((semop(sem_id, &buf, 1)) < 0) {
-        perror("down error ");
+        perror("P error ");
         exit(EXIT_FAILURE);
     }
     return EXIT_SUCCESS;
 }
 
-int up(int sem_id) {
+int V(int sem_id) {
     // V操作
     struct sembuf buf;
     buf.sem_op = 1;
     buf.sem_num = 0;
     buf.sem_flg = SEM_UNDO; 
     if ((semop(sem_id, &buf, 1)) < 0) {
-        perror("up error ");
+        perror("V error ");
         exit(EXIT_FAILURE);
     }
     return EXIT_SUCCESS; 
@@ -107,6 +115,30 @@ int set_sem(key_t sem_key, int sem_val, int sem_flg) {
     }
     return sem_id; 
 }
+
+/*
+* remove_sem 函数将信号量集从内存中删除, 并唤醒因调用semop()而阻塞的进程
+* 如果建立成功，返回 一个信号量数组的标识符 sem_id
+* 输入参数:
+* sem_key 信号量数组的键值
+* sem_val 信号量数组中信号量的个数
+* sem_flag 信号量数组的存取权限
+
+int remove_sem(key_t sem_key) {
+    int sem_id;
+    Sem_uns sem_arg;
+    // 测试由 sem_key 标识的信号量数组是否已经建立
+    if ((sem_id = get_ipc_id("/proc/sysvipc/sem", sem_key)) < 0) {
+        perror("semaphore not exists");
+    } else {
+        if (semctl(sem_id, 0, IPC_RMID) < 0) {
+            perror("semaphore remove error");
+            exit(EXIT_FAILURE);
+        }
+    }
+    return sem_id;
+}
+*/
 
 /*
 * set_shm 函数建立一个具有 n 个字节 的共享内存区

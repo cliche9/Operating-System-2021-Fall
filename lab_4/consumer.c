@@ -42,9 +42,9 @@ int main(int argc, char *argv[]) {
     // 循环, 消费者取产品
     while (1) {
         // 无产品, 消费者阻塞
-        down(cons_sem);
+        P(cons_sem);
         // 另一个消费者取产品, 互斥，本消费者阻塞
-        down(cmtx_sem);
+        P(cmtx_sem);
         
         // 读1个char作为模拟区产品, 报告进程号、字符char、读取位置
         sleep(rate);
@@ -53,9 +53,9 @@ int main(int argc, char *argv[]) {
         *cget_ptr = (*cget_ptr + 1) % buff_num;
 
         // 唤醒互斥阻塞的消费者
-        up(cmtx_sem);
+        V(cmtx_sem);
         // 唤醒阻塞的生产者
-        up(prod_sem);
+        V(prod_sem);
     }
 
     return EXIT_SUCCESS;
