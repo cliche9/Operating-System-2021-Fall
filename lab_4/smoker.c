@@ -1,6 +1,7 @@
 #include "ipc.h"
 
 int main (int argc, char *argv[]) {
+    int smoker_type = atoi(argv[1]);
     int rate;
     // 可在在命令行第一参数指定一个进程睡眠秒数，以调解进程执行速度
     if (argv[2] != NULL)
@@ -25,7 +26,7 @@ int main (int argc, char *argv[]) {
     smoker_sem_3 = set_sem(smoker_key_3, sem_val, sem_flg);
     sem_val = 0;
     int smoker_sem = 0;
-    switch (atoi(argv[1])) {
+    switch (smoker_type) {
         case 1:
             smoker_sem = smoker_sem_1;
             break;
@@ -50,13 +51,18 @@ int main (int argc, char *argv[]) {
         // 一开始可以供应材料
         P(smoker_sem);
 
-        if (*seq_ptr == 0) {
-            printf("smoker: 收到供应烟草、纸\n");
-        } else if (*seq_ptr == 1) {
-            printf("smoker: 收到供应烟草、胶水\n");
-        } else if (*seq_ptr == 2) {
-            printf("smoker: 收到供应纸、胶水\n");
+        switch (smoker_type) {
+            case 1:
+                printf("smoker: 收到供应烟草、纸\n");
+                break;
+            case 2:
+                printf("smoker: 收到供应烟草、胶水\n");
+                break;
+            case 3:
+                printf("smoker: 收到供应纸、胶水\n");
+                break;
         }
+        
         sleep(rate);
         // 解除互斥
         V(supplier_sem);
