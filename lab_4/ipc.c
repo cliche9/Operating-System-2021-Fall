@@ -5,14 +5,6 @@
 #include "ipc.h"
 
 /*
-* sig_cat() 推出进程, 释放信号量、共享内存
-*/
-void sig_cat(int sigNumber) {
-    
-}
-
-
-/*
 * get_ipc_id() 从/proc/sysvipc/文件系统中获取 IPC 的 id 号
 * pfile: 对应/proc/sysvipc/目录中的 IPC 文件分别为
 * msg-消息队列,sem-信号量,shm-共享内存
