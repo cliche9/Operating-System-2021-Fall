@@ -45,6 +45,32 @@ int respond_flg;
 key_t respond_key;
 int respond_id;
 
+// room请求sofa相关变量
+int sofa_quest_flg;
+key_t sofa_quest_key;
+int sofa_quest_id;
+// sofa响应room相关变量
+int sofa_respond_flg;
+key_t sofa_respond_key;
+int sofa_respond_id;
+// sofa请求barber相关变量
+int barber_quest_flg;
+key_t barber_quest_key;
+int barber_quest_id;
+// barber响应sofa相关变量
+int barber_respond_flg;
+key_t barber_respond_key;
+int barber_respond_id;
+// 顾客相关信号量
+key_t customer_key;
+int customer_sem;
+// 账本相关信号量
+key_t account_key;
+int account_sem;
+// 信号量赋值/flag
+int sem_flg;
+int sem_val;
+
 int get_ipc_id(char *proc_file, key_t key);
 char *set_shm(key_t shm_key, int shm_num, int shm_flag);
 int set_msq(key_t msq_key, int msq_flag);
