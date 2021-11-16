@@ -30,6 +30,7 @@ typedef union semuns {
 typedef struct msgbuf {
     long mtype;
     int mid;
+    int tid;
 } Msg_buf;
 
 key_t buff_key;
@@ -61,9 +62,20 @@ int barber_quest_id;
 int barber_respond_flg;
 key_t barber_respond_key;
 int barber_respond_id;
+// customer请求account相关变量
+int account_quest_flg;
+key_t account_quest_key;
+int account_quest_id;
+// barber响应account相关变量
+int account_respond_flg;
+key_t account_respond_key;
+int account_respond_id;
 // 顾客相关信号量
 key_t customer_key;
 int customer_sem;
+// 理发座椅相关信号量
+key_t chair_key;
+int chair_sem;
 // 账本相关信号量
 key_t account_key;
 int account_sem;
