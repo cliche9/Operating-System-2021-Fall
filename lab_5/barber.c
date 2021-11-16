@@ -6,8 +6,9 @@
 #include "ipc.h"
 int main(int argc, char *argv[]) {
     int rate;    
-    if(argv[1] != NULL)
-        rate = atoi(argv[1]);
+    int barber_num = atoi(argv[1]);
+    if(argv[2] != NULL)
+        rate = atoi(argv[2]);
     else 
         rate = 3;
     
@@ -49,80 +50,29 @@ int main(int argc, char *argv[]) {
     sem_val = 3;
     chair_sem = set_sem(chair_key, sem_val, sem_flg);
 
-    int pid[2];
-    pid[0] = fork();
-    if (pid[0] == 0) {
-        // barber 1
-        while (1) {
-            int bpid = getpid();
-            printf("barber 1 is sleeping\n");
-            // printf("barber %d is sleeping\n", bpid);
-            // 设置阻塞状态
-            barber_quest_flg = 0;
-            // 此时msgtype可以 = 0, 只接收第一条信息
-            if (msgrcv(barber_quest_id, &msg_arg, sizeof(msg_arg), 0, barber_quest_flg) >= 0) {
-                // quest from sofa message queue     
-                // msgflg = 0, 阻塞状态          
-                msgsnd(barber_respond_id, &msg_arg, sizeof(msg_arg), 0);
-                // printf("barber %d is serving customer %d\n", bpid, msg_arg.mid);
-                printf("barber 1 is serving customer %d\n", msg_arg.mid);
-                sleep(rate);
-                // 账本信号量互斥             
-                sem_wait(account_sem);                
-                // printf("barber %d is charging customer %d\n", bpid, msg_arg.mid);
-                printf("barber 1 is charging customer %d\n", msg_arg.mid);
-                sem_signal(account_sem);
-            } else {
-                // printf("barber %d is sleeping\n", bpid);
-                printf("barber 1 is sleeping\n");
-            }
-        }    
-    } else {
-        pid[1] = fork();
-        if (pid[1] == 0) {
-            // barber 2
-            while (1) {
-                int bpid = getpid(); 
-                printf("barber 2 is sleeping\n");          
-                // printf("barber %d is sleeping\n", bpid);
-                barber_quest_flg = 0;                
-                if (msgrcv(barber_quest_id, &msg_arg, sizeof(msg_arg), 0, barber_quest_flg) >= 0) {
-                    // quest from sofa message queue                
-                    msgsnd(barber_respond_id, &msg_arg, sizeof(msg_arg), 0);
-                    // printf("barber %d is serving customer %d\n", bpid, msg_arg.mid);
-                    printf("barber 2 is serving customer %d\n", msg_arg.mid);
-                    sleep(rate);                
-                    sem_wait(account_sem);
-                    // printf("barber %d is charging customer %d\n", bpid, msg_arg.mid); 
-                    printf("barber 2 is serving customer %d\n", msg_arg.mid);
-                    sem_signal(account_sem);                
-                } else {
-                    // printf("barber %d is sleeping\n", bpid);
-                    printf("barber 2 is sleeping\n");
-                }
-            }
+    // barber
+    while (1) {
+        int bpid = getpid();
+        printf("barber %d is sleeping\n");
+        // printf("barber %d is sleeping\n", bpid);
+        // 设置阻塞状态
+        barber_quest_flg = 0;
+        // 此时msgtype可以 = 0, 只接收第一条信息
+        if (msgrcv(barber_quest_id, &msg_arg, sizeof(msg_arg), 0, barber_quest_flg) >= 0) {
+            // quest from sofa message queue     
+            // msgflg = 0, 阻塞状态          
+            msgsnd(barber_respond_id, &msg_arg, sizeof(msg_arg), 0);
+            // printf("barber %d is serving customer %d\n", bpid, msg_arg.mid);
+            printf("barber %d is serving customer %d\n", msg_arg.mid);
+            sleep(rate);
+            // 账本信号量互斥             
+            sem_wait(account_sem);                
+            // printf("barber %d is charging customer %d\n", bpid, msg_arg.mid);
+            printf("barber %d is charging customer %d\n", msg_arg.mid);
+            sem_signal(account_sem);
         } else {
-            while (1) {
-                // barber 3
-                int bpid = getpid();
-                // printf("barber %d is sleeping\n", bpid);
-                printf("barber 3 is sleeping\n");
-                barber_quest_flg = 0;                
-                if (msgrcv(barber_quest_id, &msg_arg, sizeof(msg_arg), 0, barber_quest_flg) >= 0) {
-                    // quest from sofa message queue
-                    msgsnd(barber_respond_id, &msg_arg, sizeof(msg_arg), 0);
-                    // printf("barber %d is serving for customer %d\n", bpid, msg_arg.mid);
-                    printf("barber 3 is serving for customer %d\n", msg_arg.mid);
-                    sleep(rate);               
-                    sem_wait(account_sem);
-                    // printf("barber %d is charging customer %d\n", bpid, msg_arg.mid);
-                    printf("barber 3 is charging customer %d\n", msg_arg.mid);
-                    sem_signal(account_sem);                
-                } else {
-                    // printf("barber %d is sleeping\n", bpid);
-                    printf("barber 3 is sleeping\n");
-                }
-            }
+            // printf("barber %d is sleeping\n", bpid);
+            printf("barber %d is sleeping\n");
         }
     }
 
