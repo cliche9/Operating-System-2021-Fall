@@ -25,7 +25,14 @@ int main(int argc, char *argv[]) {
     barber_quest_id = set_msq(barber_quest_key, barber_quest_flg);    
     barber_respond_flg = IPC_CREAT | 0644;
     barber_respond_key = 212;    
-    barber_respond_id = set_msq(barber_respond_key, barber_respond_flg);    
+    barber_respond_id = set_msq(barber_respond_key, barber_respond_flg);
+    // 建立account请求队列, 可容纳3个
+    account_quest_flg = IPC_CREAT | 0644;
+    account_quest_key = 213;
+    account_quest_id = set_msq(account_quest_key, account_quest_flg);
+    account_respond_flg = IPC_CREAT | 0644;
+    account_respond_key = 214;    
+    account_respond_id = set_msq(account_respond_key, account_respond_flg);
     // 建立顾客信号量
     customer_key = 311;    
     sem_flg = IPC_CREAT | 0644;    
@@ -36,6 +43,11 @@ int main(int argc, char *argv[]) {
     sem_flg = IPC_CREAT | 0644;
     sem_val = 1;    
     account_sem = set_sem(account_key, sem_val, sem_flg);
+    // 建立座椅信号量
+    chair_key = 313;
+    sem_flg = IPC_CREAT | 0644;
+    sem_val = 3;
+    chair_sem = set_sem(chair_key, sem_val, sem_flg);
 
     int pid[2];
     pid[0] = fork();
