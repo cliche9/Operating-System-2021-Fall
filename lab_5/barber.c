@@ -63,16 +63,16 @@ int main(int argc, char *argv[]) {
             // msgflg = 0, 阻塞状态          
             msgsnd(barber_respond_id, &msg_arg, sizeof(msg_arg), 0);
             // printf("barber %d is serving customer %d\n", bpid, msg_arg.mid);
-            printf("barber %d is serving customer %d\n", msg_arg.mid);
+            printf("barber %d is serving customer %d\n", barber_num, msg_arg.mid);
             sleep(rate);
             // 账本信号量互斥             
             sem_wait(account_sem);                
             // printf("barber %d is charging customer %d\n", bpid, msg_arg.mid);
-            printf("barber %d is charging customer %d\n", msg_arg.mid);
+            printf("barber %d is charging customer %d\n", barber_num, msg_arg.mid);
             sem_signal(account_sem);
         } else {
             // printf("barber %d is sleeping\n", bpid);
-            printf("barber %d is sleeping\n");
+            printf("barber %d is sleeping\n", barber_num);
         }
     }
 
