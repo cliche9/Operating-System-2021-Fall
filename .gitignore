@@ -36,3 +36,10 @@
 !*.c
 !*.cpp
 !Makefile
+# lab_5 copy
+!/lab_5 copy
+/lab_5 copy/*
+!*.h
+!*.c
+!*.cpp
+!Makefile
