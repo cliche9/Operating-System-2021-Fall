@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
         } else if (buff_ptr[ROOM] > 0){
             // 沙发满了, 等待室有空位
             printf("沙发满, 新顾客 %d 只能进入等待室等待\n", id);
+            buff_ptr[ROOM]--;
             // 请求进入沙发
             msg_arg.mtype = SOFAQUEST;
             msgsnd(sofa_quest_id, &msg_arg, sizeof(msg_arg), 0);
