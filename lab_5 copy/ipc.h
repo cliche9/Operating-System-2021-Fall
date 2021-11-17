@@ -27,6 +27,9 @@
 #define WRITERQUEST 1       // 写标志
 #define READERQUEST 2       // 读标志
 #define FINISHED 3          // 完成标志
+#define SOFA 0
+#define ROOM 1
+#define CHAIR 2
 
 /* 信号量控制用的共同体 */
 typedef union semuns {
@@ -56,10 +59,6 @@ int respond_id;
 int sofa_quest_flg;
 key_t sofa_quest_key;
 int sofa_quest_id;
-// sofa响应room相关变量
-int sofa_respond_flg;
-key_t sofa_respond_key;
-int sofa_respond_id;
 // sofa请求barber相关变量
 int barber_quest_flg;
 key_t barber_quest_key;
@@ -76,12 +75,6 @@ int account_quest_id;
 int account_respond_flg;
 key_t account_respond_key;
 int account_respond_id;
-// 顾客相关信号量
-key_t customer_key;
-int customer_sem;
-// 理发座椅相关信号量
-key_t chair_key;
-int chair_sem;
 // 账本相关信号量
 key_t account_key;
 int account_sem;

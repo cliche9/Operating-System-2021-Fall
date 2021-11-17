@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
     sofa_quest_flg = IPC_CREAT | 0644;
     sofa_quest_key = 111;
     sofa_quest_id = set_msq(sofa_quest_key, sofa_quest_flg);
-    sofa_respond_flg = IPC_CREAT | 0644;
-    sofa_respond_key = 112;
-    sofa_respond_id = set_msq(sofa_respond_key, sofa_respond_flg);
     // 建立barber队列, 可容纳4人
     barber_quest_flg = IPC_CREAT | 0644;
     barber_quest_key = 211;    
@@ -40,11 +37,6 @@ int main(int argc, char *argv[]) {
     sem_flg = IPC_CREAT | 0644;
     sem_val = 1;    
     account_sem = set_sem(account_key, sem_val, sem_flg);
-    // 建立座椅信号量
-    chair_key = 313;
-    sem_flg = IPC_CREAT | 0644;
-    sem_val = 3;
-    chair_sem = set_sem(chair_key, sem_val, sem_flg);
 
     printf("理发师 %d 睡眠...\n", barber_num);
     // barber

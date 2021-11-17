@@ -17,9 +17,6 @@ int main(int argc, char *argv[]) {
     sofa_quest_flg = IPC_CREAT | 0644;
     sofa_quest_key = 111;
     sofa_quest_id = set_msq(sofa_quest_key, sofa_quest_flg);
-    sofa_respond_flg = IPC_CREAT | 0644;
-    sofa_respond_key = 112;
-    sofa_respond_id = set_msq(sofa_respond_key, sofa_respond_flg);
     // 建立barber队列, 可容纳4人
     barber_quest_flg = IPC_CREAT | 0644;
     barber_quest_key = 211;    
@@ -33,26 +30,23 @@ int main(int argc, char *argv[]) {
     account_quest_id = set_msq(account_quest_key, account_quest_flg);
     account_respond_flg = IPC_CREAT | 0644;
     account_respond_key = 214;    
-    account_respond_id = set_msq(account_respond_key, account_respond_flg);
-    // 建立顾客信号量
-    customer_key = 311;    
-    sem_flg = IPC_CREAT | 0644;    
-    sem_val = 0;    
-    customer_sem = set_sem(customer_key, sem_val, sem_flg);    
+    account_respond_id = set_msq(account_respond_key, account_respond_flg);  
     // 建立账本信号量
     account_key = 312;    
     sem_flg = IPC_CREAT | 0644;
     sem_val = 1;    
     account_sem = set_sem(account_key, sem_val, sem_flg);
-    // 建立座椅信号量
-    chair_key = 313;
-    sem_flg = IPC_CREAT | 0644;
-    sem_val = 3;
-    chair_sem = set_sem(chair_key, sem_val, sem_flg);
-    // 沙发上人数
-    int sofa_count = 0;    
-    // 等待室人数
-    int wait_count = 0;
+    // 共享内存
+    buff_key = 101;
+    buff_num = STRSIZE + 1;
+    shm_flg = IPC_CREAT | 0644;
+    buff_ptr = (char *)set_shm(buff_key, buff_num, shm_flg);
+    // 沙发上剩余座位
+    buff_ptr[SOFA] = 4;   
+    // 等待室剩余座位
+    buff_ptr[ROOM] = 13;
+    // 椅子剩余座位
+    buff_ptr[CHAIR] = 3;
     // 顾客id 
     int id = -1;
 
@@ -62,7 +56,7 @@ int main(int argc, char *argv[]) {
         msg_arg.mid = id;
         msg_arg.mtype = id + 1;
         // 来了新customer
-        if (sofa_count < 4) {
+        if (buff_ptr[SOFA] < 4) {
             // 沙发有空位
             if (wait_count > 0) {
                 // 等待室有人
@@ -74,7 +68,7 @@ int main(int argc, char *argv[]) {
             } else {
                 // 等待室没人, customer直接进入sofa
                 printf("a new customer %d sit at sofa\n", id);
-                sofa_count++;
+                buff_ptr[sofa]++;
             }
             // 需要更新沙发队列, 发送sofa customer对barber的quest
             barber_quest_flg = IPC_NOWAIT;
@@ -98,13 +92,13 @@ int main(int argc, char *argv[]) {
         barber_respond_flg = IPC_NOWAIT;
         // sofa接收barber发来的respond, 看是否理发结束, msgtype=0, 接收第1条消息即可, sofa上的人数--
         if (msgrcv(barber_respond_id, &msg_arg, sizeof(msg_arg), 0, barber_respond_flg) > 0)
-            sofa_count--;
+            buff_ptr[sofa]--;
         // waiting room接收sofa发来的respond, 看sofa是否有空, waiting room的人数--
         sofa_respond_flg = IPC_NOWAIT;
         if (msgrcv(sofa_respond_id, &msg_arg,sizeof(msg_arg), 0, sofa_respond_flg) > 0) {
             printf("customer %d moves to sofa from the waiting room\n", msg_arg.mid);
             wait_count--;
-            sofa_count++;
+            buff_ptr[sofa]++;
         }
     }
 
