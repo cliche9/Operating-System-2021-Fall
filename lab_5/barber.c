@@ -37,18 +37,11 @@ int main(int argc, char *argv[]) {
     sem_flg = IPC_CREAT | 0644;
     sem_val = 1;    
     account_sem = set_sem(account_key, sem_val, sem_flg);
-    // 共享内存
-    buff_key = 101;
-    buff_num = STRSIZE + 1;
-    shm_flg = IPC_CREAT | 0644;
-    buff_ptr = (char *)set_shm(buff_key, buff_num, shm_flg);
 
     printf("理发师 %d 睡眠...\n", barber_num);
     // barber
     while (1) {
         if (msgrcv(barber_quest_id, &msg_arg, sizeof(msg_arg), HAIRQUEST, IPC_NOWAIT) >= 0) {     
-            buff_ptr[SOFA]++;
-            buff_ptr[CHAIR]--;  
             printf("理发师 %d 为顾客 %d 理发中...\n", barber_num, msg_arg.mid);
             sleep(rate);
             printf("顾客 %d 理发完毕\n", msg_arg.mid);
