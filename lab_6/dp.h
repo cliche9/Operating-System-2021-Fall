@@ -51,8 +51,8 @@ class Condition {
 public:
     Condition(char *st[], Sema *sm);
     ~Condition();
-    void Wait(Lock *lock, int i);    // 条件变量阻塞操作
-    void Signal(int i);             // 条件变量唤醒操作
+    void wait(Lock *lock, int i);   // 条件变量阻塞操作
+    void signal(int i);             // 条件变量唤醒操作
 private:
     Sema *sema;                     // 哲学家信号量
     char **state;                   // 哲学家当前的状态

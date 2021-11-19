@@ -67,7 +67,7 @@ Condition::Condition(char *st[], Sema *sm) {
  * 左右邻居不在就餐，条件成立，状态变为就餐
  * 否则睡眠，等待条件成立
  */
-void Condition::Wait(Lock *lock, int i) {
+void Condition::wait(Lock *lock, int i) {
     if ((*state[(i + 4) % 5] != eating) && (*state[i] == hungry) && (*state[(i + 1) % 5] != eating)) {
         *state[i] = eating;         // 拿到筷子，进就餐态
     } else {
@@ -81,7 +81,7 @@ void Condition::Wait(Lock *lock, int i) {
  * 左右邻居不在就餐，则置其状态为就餐，
  * 将其从饥俄中唤醒。否则什么也不作。
  */
-void Condition::Signal(int i) {
+void Condition::signal(int i) {
     if ((*state[(i + 4) % 5] != eating) && (*state[i] == hungry) && (*state[(i + 1) % 5] != eating)) {
         // 可拿到筷子，从饥饿态唤醒进就餐态
         sema->sem_signal();
@@ -228,7 +228,7 @@ dp::dp(int r) {
 void dp::pickup(int i) {
     lock->close_lock();// 进入管程，上锁
     *state[i] = hungry; // 进饥饿态
-    self[i]->Wait(lock, i); // 测试是否能拿到两只筷子
+    self[i]->wait(lock, i); // 测试是否能拿到两只筷子
     cout << "p" << i + 1 << ":" << getpid() << " eating\n";
     sleep(rate); // 拿到，吃 rate 秒
     lock->open_lock();// 离开管程，开锁
@@ -240,9 +240,9 @@ void dp::putdown(int i) {
     lock->close_lock();// 进入管程，上锁
     *state[i] = thinking; // 进思考态
     j = (i + 4) % 5;
-    self[j]->Signal(j); // 唤醒左邻居
+    self[j]->signal(j); // 唤醒左邻居
     j = (i + 1) % 5;
-    self[j]->Signal(j); // 唤醒右邻居
+    self[j]->signal(j); // 唤醒右邻居
     lock->open_lock();// 离开管程，开锁
     cout << "p" << i + 1 << ":" << getpid() << " thinking\n";
     sleep(rate); // 思考 rate 秒
@@ -303,8 +303,9 @@ int main(int argc, char *argv[]) {
     } else if (pid[4] == 0) { // 利用管程模拟第五个哲学家就餐的过程
         while (1) {
             tdp->pickup(4);// 拿起筷子
-        tdp->putdown(4);// 放下筷子
+            tdp->putdown(4);// 放下筷子
         }
     }
+
     return 0;
 }
