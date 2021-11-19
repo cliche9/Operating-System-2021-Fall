@@ -36,9 +36,9 @@
 !*.c
 !*.cpp
 !Makefile
-# lab_5 copy
-!/lab_5 copy
-/lab_5 copy/*
+# lab_6
+!/lab_6
+/lab_6/*
 !*.h
 !*.c
 !*.cpp

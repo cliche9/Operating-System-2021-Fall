@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
                 // 有读者完成
                 count++;
                 printf("%d reader finished\n", msg_arg.mid);
+                printf("count = %d\n", count);
             } else if (msgrcv(quest_id, &msg_arg, sizeof(msg_arg), READERQUEST, quest_flg) >= 0) {
                 // 读者请求
                 count--;
@@ -47,13 +48,15 @@ int main(int argc, char *argv[]) {
                 msg_arg.mtype = msg_arg.mid;
                 msgsnd(respond_id, &msg_arg, sizeof(msg_arg), 0);
                 printf("%d quest read\n", msg_arg.mid);
+                printf("count = %d\n", count);
             } else if (msgrcv(quest_id, &msg_arg, sizeof(msg_arg), WRITERQUEST, quest_flg) >= 0) {
-                // 读者请求
+                // 写者请求
                 count -= MAXVAL;
                 // 为什么这样用？
                 msg_arg.mtype = msg_arg.mid;
                 msgsnd(respond_id, &msg_arg, sizeof(msg_arg), 0);
                 printf("%d quest write\n", msg_arg.mid);
+                printf("count = %d\n", count);
             }
         } else if (count == 0) {
             // count == 0, 写者正在写, 等待完成
@@ -62,6 +65,7 @@ int main(int argc, char *argv[]) {
             msgrcv(quest_id, &msg_arg, sizeof(msg_arg), FINISHED, 0);
             count = MAXVAL;
             printf("%d write finished\n", msg_arg.mid);
+            printf("count = %d\n", count);
             // 写完有读请求, 这里还需要写在这里吗, 是否和之前的重复了？
             /*
             if (msgrcv(quest_id, &msg_arg, sizeof(msg_arg), READERQUEST, quest_flg) >= 0) {
@@ -72,10 +76,29 @@ int main(int argc, char *argv[]) {
             }
             */
         } else if (count < 0) {
+            /*
+            quest_flg = IPC_NOWAIT; // 非阻塞方式接受请求信息
+            if (msgrcv(quest_id, &msg_arg, sizeof(msg_arg), FINISHED, quest_flg) >= 0) {
+                // 有读者完成
+                count++;
+                printf("%d reader finished\n", msg_arg.mid);
+                printf("count = %d\n", count);
+            } else if (msgrcv(quest_id, &msg_arg, sizeof(msg_arg), READERQUEST, quest_flg) >= 0) {
+                // 读者请求
+                count--;
+                // 为什么这样用？
+                msg_arg.mtype = msg_arg.mid;
+                msgsnd(respond_id, &msg_arg, sizeof(msg_arg), 0);
+                printf("%d quest read\n", msg_arg.mid);
+                printf("count = %d\n", count);
+            }
+            */
+            
             // count < 0, 处理读者, 将其完成, 使得count = 0
             msgrcv(quest_id, &msg_arg, sizeof(msg_arg), FINISHED, 0);
             count++;
             printf("%d reader finished\n", msg_arg.mid);
+            printf("count = %d\n", count);
         }
     }
 
