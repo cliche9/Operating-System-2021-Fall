@@ -1,11 +1,11 @@
-head = dp.h
-srcs = dp.cpp
-objs = dp.o
+head = track.h
+srcs = track.cpp
+objs = track.o
 opts = -w -g -c
-all: dp
-dp: $(objs)
-	g++ $(objs) -o dp
-dp.o: $(srcs) $(head)
+all: track
+track: $(objs)
+	g++ $(objs) -o track
+track.o: $(srcs) $(head)
 	g++ $(opts) $(srcs)
 clean:
-	rm dp *.o
+	rm track *.o
