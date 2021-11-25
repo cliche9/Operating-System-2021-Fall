@@ -61,23 +61,29 @@ void Lock::unlock() {
 }
 
 // 用于哲学家就餐问题的条件变量
-Condition::Condition(bool *admission, Sema *sm) {
-    isAbleToCross = admission;
-    sema = sm;
+Condition::Condition(Direction *direction, Sema *east, Sema *west, int *trackCount, int *waitCount) {
+    currentDirection = direction;
+    trackCount = trackCount;
+    waitCount = waitCount;
+    east_sema = east;
+    west_sema = west;
 }
 
 /*
  * 当前铁路可以通行, 则占据铁路, 使其无法通行
  * 否则睡眠，等待条件成立
  */
-void Condition::wait(Lock *lock, int i) {
-    if (*isAbleToCross) {
-        *isAbleToCross = false;
-    } else {
-        cout << "train " << i << " : " << getpid() << " quest to track in\n";
-        lock->unlock();// 开锁
-        sema->sem_wait();// 没拿到，以饥饿态等待
-        lock->lock();// 上锁
+void Condition::wait(Lock *lock, int i, int direction) {
+    if (direction == east) {
+        cout << "train " << i << " : " << getpid() << " quest to track in from east\n";
+        lock->unlock();         // 开锁
+        east_sema->sem_wait();  // 等待
+        lock->lock();           // 上锁
+    } else if (direction == west) {
+        cout << "train " << i << " : " << getpid() << " quest to track in from west\n";
+        lock->unlock();         // 开锁
+        west_sema->sem_wait();  // 等待
+        lock->lock();           // 上锁
     }
 }
 
@@ -85,11 +91,11 @@ void Condition::wait(Lock *lock, int i) {
  * 当前铁路可以通行
  * 否则什么也不做
  */
-void Condition::signal() {
-    if (!*isAbleToCross) {
-        sema->sem_signal();
-        *isAbleToCross = true;
-    }
+void Condition::signal(int direction) {
+    if (direction == east)
+        east_sema->sem_signal();
+    else if (direction == west)
+        west_sema->sem_signal();
 }
 
 Condition::~Condition() {}
@@ -210,6 +216,7 @@ track::track(int r) {
     int sem_val = 0;
     int sem_id;
     Sema *sema;
+    Sema *east_sem, *west_sem;
 
     rate = r;
     
@@ -221,32 +228,79 @@ track::track(int r) {
     sema = new Sema(sem_id);
     lock = new Lock(sema);
 
-    if ((isAbleToCross = (bool *)set_shm(shm_key++, shm_num, ipc_flg)) == NULL) {
+    if ((currentDirection = (Direction *)set_shm(shm_key++, shm_num, ipc_flg)) == NULL) {
         perror("Share memory create error");
         exit(EXIT_FAILURE);
     }
-    *isAbleToCross = true;
+    if ((trackCount = (int *)set_shm(shm_key++, shm_num, ipc_flg)) == NULL) {
+        perror("Share memory create error");
+        exit(EXIT_FAILURE);
+    }
+    if ((waitCount = (int *)set_shm(shm_key++, 2, ipc_flg)) == NULL) {
+        perror("Share memory create error");
+        exit(EXIT_FAILURE);
+    }
+    sem_val = 0;
+    *currentDirection = east;
     if ((sem_id = set_sem(sem_key++, sem_val, ipc_flg)) < 0) {
         perror("Semaphor create error ");
         exit(EXIT_FAILURE);
     }
-    sema = new Sema(sem_id);
-    trackCondition = new Condition(isAbleToCross, sema);
+    east_sem = new Sema(sem_id);
+    if ((sem_id = set_sem(sem_key++, sem_val, ipc_flg)) < 0) {
+        perror("Semaphor create error ");
+        exit(EXIT_FAILURE);
+    }
+    west_sem = new Sema(sem_id);
+    trackCondition = new Condition(currentDirection, east_sem, west_sem, trackCount, waitCount);
+    maxOneDirection = 6;
+    *trackCount = 0;
+    waitCount[EAST] = waitCount[WEST] = 0;
 }
 
 void track::trackIn(int i, int direction) {
     lock->lock();
-    trackCondition->wait(lock, i);
-    string dir = (direction) ? "east" : "west";
+    if (*currentDirection != direction || *trackCount >= maxOneDirection) {
+        waitCount[direction]++;
+        trackCondition->wait(lock, i, direction);
+        waitCount[direction]--;
+    }
+    
+    (*trackCount)++;
+    lock->unlock();
+
+    string dir = (direction == east) ? "east" : "west";
+    if (*currentDirection == east)
+        cout << "east: " << *trackCount << ", west: 0\n"; 
+    else if (*currentDirection == west)
+        cout << "east: 0, west: " << *trackCount << endl; 
+
     cout << "train " << i << " : " << getpid() << " is on track in direction of " << dir << "\n";
     sleep(rate);
-    lock->unlock();
 }
 
 void track::trackOut(int i) {
     lock->lock();
-    trackCondition->signal();
+    
+    (*trackCount)--;
     cout << "train " << i << " : " << getpid() << " has left track\n";
+    if (*currentDirection == east)
+        cout << "east: " << *trackCount << ", west: 0\n"; 
+    else if (*currentDirection == west)
+        cout << "east: 0, west: " << *trackCount << endl;
+    
+    if (*trackCount == 0) {
+        if (*currentDirection == east) {
+            if (waitCount[WEST] > 0)
+                trackCondition->signal(west);
+            *currentDirection = west;
+        } else if (*currentDirection == west) {
+            if (waitCount[EAST] > 0)
+                trackCondition->signal(east);
+            *currentDirection = east;
+        }
+    }
+
     lock->unlock();
 
     sleep(rate);

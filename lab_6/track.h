@@ -2,6 +2,8 @@
  * Filename : track.h
  * Function : 声明 IPC 机制的函数原型和火车管程类
 */
+#define EAST 0
+#define WEST 1
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
@@ -20,8 +22,8 @@ typedef union semuns {
 } Sem_uns;
 
 // 铁路的 3 个状态（思考、饥俄、就餐）
-enum State {
-    thinking, hungry, eating 
+enum Direction {
+    east, west
 };
 
 // 铁路管程中使用的信号量
@@ -49,13 +51,16 @@ private:
 // 铁路管程中使用的条件变量
 class Condition {
 public:
-    Condition(bool *admission, Sema *sm);
+    Condition(Direction *direction, Sema *east, Sema *west, int *trackCount, int *waitCount);
     ~Condition();
-    void wait(Lock *lock, int direction);   // 条件变量阻塞操作
-    void signal();                  // 条件变量唤醒操作
+    void wait(Lock *lock, int i, int direction);    // 条件变量阻塞操作
+    void signal(int direction);                     // 条件变量唤醒操作
 private:
-    Sema *sema;                     // 铁路信号量
-    bool *isAbleToCross;
+    Sema *east_sema;                // 铁路信号量
+    Sema *west_sema;                
+    int *waitCount;
+    int *trackCount;
+    Direction *currentDirection;
 };
 
 // 铁路管程的定义
@@ -73,7 +78,10 @@ public:
     char *set_shm(key_t shm_key, int shm_num, int shm_flag);
 private:
     int rate;                       // 控制执行速度
+    int maxOneDirection;            // 单方向最多行驶个数
+    int *trackCount;                // 铁路上的车辆数
+    int *waitCount;
     Lock *lock;                     // 控制互斥进入管程的锁
     Condition *trackCondition;      // 控制铁路状态的条件变量
-    bool *isAbleToCross;             // 铁路上列车当前的状态
+    Direction *currentDirection;    // 铁路上列车当前的状态
 };
