@@ -61,12 +61,12 @@ void Lock::unlock() {
 }
 
 // 用于哲学家就餐问题的条件变量
-Condition::Condition(Direction *direction, Sema *east, Sema *west, int *trackCount, int *waitCount) {
+Condition::Condition(Direction *direction, Sema *north, Sema *south, int *trackCount, int *waitCount) {
     currentDirection = direction;
     trackCount = trackCount;
     waitCount = waitCount;
-    east_sema = east;
-    west_sema = west;
+    east_sema = north;
+    west_sema = south;
 }
 
 /*
@@ -74,13 +74,13 @@ Condition::Condition(Direction *direction, Sema *east, Sema *west, int *trackCou
  * 否则睡眠，等待条件成立
  */
 void Condition::wait(Lock *lock, int i, int direction) {
-    if (direction == east) {
-        cout << "train " << i << " : " << getpid() << " quest to track in from east\n";
+    if (direction == north) {
+        cout << "train " << i << " : " << getpid() << " quest to track in from north\n";
         lock->unlock();         // 开锁
         east_sema->sem_wait();  // 等待
         lock->lock();           // 上锁
-    } else if (direction == west) {
-        cout << "train " << i << " : " << getpid() << " quest to track in from west\n";
+    } else if (direction == south) {
+        cout << "train " << i << " : " << getpid() << " quest to track in from south\n";
         lock->unlock();         // 开锁
         west_sema->sem_wait();  // 等待
         lock->lock();           // 上锁
@@ -92,9 +92,9 @@ void Condition::wait(Lock *lock, int i, int direction) {
  * 否则什么也不做
  */
 void Condition::signal(int direction) {
-    if (direction == east)
+    if (direction == north)
         east_sema->sem_signal();
-    else if (direction == west)
+    else if (direction == south)
         west_sema->sem_signal();
 }
 
@@ -241,7 +241,7 @@ track::track(int r) {
         exit(EXIT_FAILURE);
     }
     sem_val = 0;
-    *currentDirection = east;
+    *currentDirection = north;
     if ((sem_id = set_sem(sem_key++, sem_val, ipc_flg)) < 0) {
         perror("Semaphor create error ");
         exit(EXIT_FAILURE);
@@ -255,7 +255,7 @@ track::track(int r) {
     trackCondition = new Condition(currentDirection, east_sem, west_sem, trackCount, waitCount);
     maxOneDirection = 6;
     *trackCount = 0;
-    waitCount[EAST] = waitCount[WEST] = 0;
+    waitCount[NORTH] = waitCount[SOUTH] = 0;
 }
 
 void track::trackIn(int i, int direction) {
@@ -269,11 +269,11 @@ void track::trackIn(int i, int direction) {
     (*trackCount)++;
     lock->unlock();
 
-    string dir = (direction == east) ? "east" : "west";
-    if (*currentDirection == east)
-        cout << "east: " << *trackCount << ", west: 0\n"; 
-    else if (*currentDirection == west)
-        cout << "east: 0, west: " << *trackCount << endl; 
+    string dir = (direction == north) ? "north" : "south";
+    if (*currentDirection == north)
+        cout << "north: " << *trackCount << ", south: 0\n"; 
+    else if (*currentDirection == south)
+        cout << "north: 0, south: " << *trackCount << endl; 
 
     cout << "train " << i << " : " << getpid() << " is on track in direction of " << dir << "\n";
     sleep(rate);
@@ -284,20 +284,24 @@ void track::trackOut(int i) {
     
     (*trackCount)--;
     cout << "train " << i << " : " << getpid() << " has left track\n";
-    if (*currentDirection == east)
-        cout << "east: " << *trackCount << ", west: 0\n"; 
-    else if (*currentDirection == west)
-        cout << "east: 0, west: " << *trackCount << endl;
+    if (*currentDirection == north)
+        cout << "north: " << *trackCount << ", south: 0\n"; 
+    else if (*currentDirection == south)
+        cout << "north: 0, south: " << *trackCount << endl;
     
     if (*trackCount == 0) {
-        if (*currentDirection == east) {
-            if (waitCount[WEST] > 0)
-                trackCondition->signal(west);
-            *currentDirection = west;
-        } else if (*currentDirection == west) {
-            if (waitCount[EAST] > 0)
-                trackCondition->signal(east);
-            *currentDirection = east;
+        if (*currentDirection == north) {
+            if (waitCount[SOUTH] > 0) {
+                trackCondition->signal(south);
+                *currentDirection = south;
+            } else
+                trackCondition->signal(north);
+        } else if (*currentDirection == south) {
+            if (waitCount[NORTH] > 0) {
+                trackCondition->signal(north);
+                *currentDirection = north;
+            } else 
+                trackCondition->signal(south);
         }
     }
 

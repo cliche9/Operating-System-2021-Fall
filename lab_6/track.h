@@ -2,8 +2,8 @@
  * Filename : track.h
  * Function : 声明 IPC 机制的函数原型和火车管程类
 */
-#define EAST 0
-#define WEST 1
+#define NORTH 0
+#define SOUTH 1
 #include <iostream>
 #include <cstdio>
 #include <cstdlib>
@@ -23,7 +23,7 @@ typedef union semuns {
 
 // 铁路的 3 个状态（思考、饥俄、就餐）
 enum Direction {
-    east, west
+    north, south
 };
 
 // 铁路管程中使用的信号量
@@ -51,7 +51,7 @@ private:
 // 铁路管程中使用的条件变量
 class Condition {
 public:
-    Condition(Direction *direction, Sema *east, Sema *west, int *trackCount, int *waitCount);
+    Condition(Direction *direction, Sema *north, Sema *south, int *trackCount, int *waitCount);
     ~Condition();
     void wait(Lock *lock, int i, int direction);    // 条件变量阻塞操作
     void signal(int direction);                     // 条件变量唤醒操作
