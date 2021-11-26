@@ -65,8 +65,8 @@ Condition::Condition(Direction *direction, Sema *north, Sema *south, int *trackC
     currentDirection = direction;
     trackCount = trackCount;
     waitCount = waitCount;
-    east_sema = north;
-    west_sema = south;
+    north_sema = north;
+    south_sema = south;
 }
 
 /*
@@ -77,12 +77,12 @@ void Condition::wait(Lock *lock, int i, int direction) {
     if (direction == north) {
         cout << "train " << i << " : " << getpid() << " quest to track in from north\n";
         lock->unlock();         // 开锁
-        east_sema->sem_wait();  // 等待
+        north_sema->sem_wait();  // 等待
         lock->lock();           // 上锁
     } else if (direction == south) {
         cout << "train " << i << " : " << getpid() << " quest to track in from south\n";
         lock->unlock();         // 开锁
-        west_sema->sem_wait();  // 等待
+        south_sema->sem_wait();  // 等待
         lock->lock();           // 上锁
     }
 }
@@ -93,9 +93,9 @@ void Condition::wait(Lock *lock, int i, int direction) {
  */
 void Condition::signal(int direction) {
     if (direction == north)
-        east_sema->sem_signal();
+        north_sema->sem_signal();
     else if (direction == south)
-        west_sema->sem_signal();
+        south_sema->sem_signal();
 }
 
 Condition::~Condition() {}
@@ -216,7 +216,7 @@ track::track(int r) {
     int sem_val = 0;
     int sem_id;
     Sema *sema;
-    Sema *east_sem, *west_sem;
+    Sema *north_sem, *south_sem;
 
     rate = r;
     
@@ -246,13 +246,13 @@ track::track(int r) {
         perror("Semaphor create error ");
         exit(EXIT_FAILURE);
     }
-    east_sem = new Sema(sem_id);
+    north_sem = new Sema(sem_id);
     if ((sem_id = set_sem(sem_key++, sem_val, ipc_flg)) < 0) {
         perror("Semaphor create error ");
         exit(EXIT_FAILURE);
     }
-    west_sem = new Sema(sem_id);
-    trackCondition = new Condition(currentDirection, east_sem, west_sem, trackCount, waitCount);
+    south_sem = new Sema(sem_id);
+    trackCondition = new Condition(currentDirection, north_sem, south_sem, trackCount, waitCount);
     maxOneDirection = 6;
     *trackCount = 0;
     waitCount[NORTH] = waitCount[SOUTH] = 0;

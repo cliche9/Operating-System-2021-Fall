@@ -56,11 +56,11 @@ public:
     void wait(Lock *lock, int i, int direction);    // 条件变量阻塞操作
     void signal(int direction);                     // 条件变量唤醒操作
 private:
-    Sema *east_sema;                // 铁路信号量
-    Sema *west_sema;                
-    int *waitCount;
-    int *trackCount;
-    Direction *currentDirection;
+    Sema *north_sema;               // 北行方向信号量
+    Sema *south_sema;               // 南行方向信号量
+    int *waitCount;                 // 双向等待车辆数
+    int *trackCount;                // 当前铁路车辆数
+    Direction *currentDirection;    // 当前铁路行驶方向
 };
 
 // 铁路管程的定义
@@ -77,10 +77,10 @@ public:
     char *set_shm(key_t shm_key, int shm_num, int shm_flag);
 private:
     int rate;                       // 控制执行速度
-    int maxOneDirection;            // 单方向最多行驶个数
+    int maxOneDirection;            // 单方向最多行驶车辆数
     int *trackCount;                // 铁路上的车辆数
-    int *waitCount;
+    int *waitCount;                 // 当前两方向等待的车辆数
     Lock *lock;                     // 控制互斥进入管程的锁
     Condition *trackCondition;      // 控制铁路状态的条件变量
-    Direction *currentDirection;    // 铁路上列车当前的状态
+    Direction *currentDirection;    // 铁路上列车当前的行驶方向
 };
