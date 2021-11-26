@@ -69,7 +69,6 @@ public:
     track(int rate);                // 管程构造函数
     ~track();
     void trackIn(int trainId, int dirction);      // 进入铁路
-    void trackCross(int trainId);   // 在铁路上行驶
     void trackOut(int trainId);     // 离开铁路
     // 建立或获取 ipc 信号量的一组函数的原型说明
     int get_ipc_id(char *proc_file, key_t key);

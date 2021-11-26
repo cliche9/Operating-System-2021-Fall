@@ -312,10 +312,8 @@ track::~track() {
 
 int main(int argc, char *argv[]) {
     int rate = (argc > 1) ? atoi(argv[1]) : 3;
-    int maxTrains = 0;
+    int maxTrains = (argc > 2) ? atoi(argv[2]) : 20;
     track theTrack(rate);
-    cout << "请输入经过铁轨的总车辆数: ";
-    cin >> maxTrains;
 
     int pid[maxTrains];
     srand(time(nullptr));
