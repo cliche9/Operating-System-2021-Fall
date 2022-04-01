@@ -1,6 +1,10 @@
 # root
 /*
 !.gitignore
+!.README.md
+# 实验报告
+!/实验报告
+/实验报告/*
 # exp1
 !/exp1
 /exp1/*
