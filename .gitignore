@@ -1,44 +1,44 @@
 # root
 /*
 !.gitignore
-# lab_1
-!/lab_1
-/lab_1/*
+# exp1
+!/exp1
+/exp1/*
 !*.h
 !*.c
 !*.cpp
 !Makefile
-# lab_2
-!/lab_2
-/lab_2/*
+# exp2
+!/exp2
+/exp2/*
 !*.h
 !*.c
 !*.cpp
 !Makefile
-# lab_3
-!/lab_3
-/lab_3/*
+# exp3
+!/exp3
+/exp3/*
 !*.h
 !*.c
 !*.cpp
 !Makefile
-# lab_4
-!/lab_4
-/lab_4/*
+# exp4
+!/exp4
+/exp4/*
 !*.h
 !*.c
 !*.cpp
 !Makefile
-# lab_5
-!/lab_5
-/lab_5/*
+# exp5
+!/exp5
+/exp5/*
 !*.h
 !*.c
 !*.cpp
 !Makefile
-# lab_6
-!/lab_6
-/lab_6/*
+# exp6
+!/exp6
+/exp6/*
 !*.h
 !*.c
 !*.cpp
