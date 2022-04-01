@@ -1,10 +1,10 @@
-srcs = lab_2.c
-objs = lab_2.o
+srcs = exp2.c
+objs = exp2.o
 opts = -g -c
-all: lab_2
-lab_2: $(objs)
-	gcc $(objs) -l pthread -o lab_2
-lab_2.o: $(srcs) $(head)
+all: exp2
+exp2: $(objs)
+	gcc $(objs) -l pthread -o exp2
+exp2.o: $(srcs) $(head)
 	gcc $(opts) $(srcs)
 clean:
-	rm lab_2 *.o
+	rm exp2 *.o

@@ -1,11 +1,11 @@
-head = lab_1.h
-srcs = lab_1.cpp
-objs = lab_1.o
+head = exp1.h
+srcs = exp1.cpp
+objs = exp1.o
 opts = -g -c
-all: lab_1
-lab_1: $(objs)
-	    gcc $(objs) -o lab_1
-lab_1.o: $(srcs) $(head)
+all: exp1
+exp1: $(objs)
+	    gcc $(objs) -o exp1
+exp1.o: $(srcs) $(head)
 		gcc $(opts) $(srcs)
 clean:
-		rm lab_1 *.o
+		rm exp1 *.o

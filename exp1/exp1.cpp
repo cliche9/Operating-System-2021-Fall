@@ -1,4 +1,4 @@
-#include "lab_1.h"
+#include "exp1.h"
 
 int main(int argc, char *argv[]) {
     int pidOfLs;    // 子进程1--ls
